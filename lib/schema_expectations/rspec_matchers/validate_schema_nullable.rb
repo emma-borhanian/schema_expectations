@@ -8,6 +8,9 @@ module SchemaExpectations
 
     class ValidateSchemaNullableMatcher
       def matches?(model)
+        model = model.class if model.is_a?(ActiveRecord::Base)
+        fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
+
         @model = model
         @not_null_columns = filter_attributes(not_null_columns(model))
         @present_attributes = filter_attributes(present_attributes(model))

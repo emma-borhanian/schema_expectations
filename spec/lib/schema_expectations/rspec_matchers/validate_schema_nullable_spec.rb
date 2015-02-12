@@ -1,6 +1,22 @@
 require 'spec_helper'
 
 describe :validate_schema_nullable do
+  specify 'works on instances', :active_record do
+    create_table :records do |t|
+      t.string :name, null: false
+      t.string :wrong
+    end
+
+    stub_const('Record', Class.new(ActiveRecord::Base))
+
+    Record.instance_eval do
+      validates :name, :wrong, presence: true
+    end
+
+    expect(Record.new).to validate_schema_nullable.only(:name)
+    expect(Record.new).to_not validate_schema_nullable.only(:wrong)
+  end
+
   specify 'asserts that presence validations match NOT NULL', :active_record do
     create_table :records do |t|
       t.string :not_null, null: false
