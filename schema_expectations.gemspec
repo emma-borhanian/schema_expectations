@@ -22,7 +22,10 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 2.0.0'
 
-  gem.add_dependency 'activerecord', '~> 4.2'
+  gem.add_dependency 'activerecord', '>= 3.1', '< 4.3'
+
+  # optional dependency
+  gem.add_development_dependency 'rspec', '>= 3.0', '< 3.3'
 
   gem.add_development_dependency 'pry'
   gem.add_development_dependency 'rake', '~> 10.4'
@@ -30,8 +33,8 @@ Gem::Specification.new do |gem|
 
   # tests
   gem.add_development_dependency 'wwtd'
+  gem.add_development_dependency 'appraisal', '~> 1.0'
   gem.add_development_dependency 'codeclimate-test-reporter'
-  gem.add_development_dependency 'rspec', '~> 3.2'
   gem.add_development_dependency 'guard-rspec', '~> 4.5'
   gem.add_development_dependency 'sqlite3', '~> 1.3'
 end
