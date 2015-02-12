@@ -1,3 +1,5 @@
+require 'schema_expectations/version'
+
 begin
   require 'rspec/core'
 rescue LoadError
