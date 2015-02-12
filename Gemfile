@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+gem 'codeclimate-test-reporter'
+
 gem 'rspec'
 gem 'guard-rspec'
 
