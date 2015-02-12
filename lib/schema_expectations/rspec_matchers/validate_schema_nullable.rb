@@ -43,22 +43,22 @@ module SchemaExpectations
         fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
 
         @model = model
-        @not_null_columns = filter_attributes(not_null_columns)
+        @not_null_column_names = filter_attributes(not_null_column_names)
         @present_attributes = filter_attributes(present_attributes)
-        @not_null_columns == @present_attributes
+        @not_null_column_names == @present_attributes
       end
 
       def failure_message
-        @not_null_columns.sort!
+        @not_null_column_names.sort!
         @present_attributes.sort!
 
         errors = []
 
-        (@present_attributes - @not_null_columns).each do |attribute|
+        (@present_attributes - @not_null_column_names).each do |attribute|
           errors << "#{attribute} has unconditional presence validation but is missing NOT NULL"
         end
 
-        (@not_null_columns - @present_attributes).each do |attribute|
+        (@not_null_column_names - @present_attributes).each do |attribute|
           if condition = validator_condition(attribute)
             errors << "#{attribute} is NOT NULL but its presence validator was conditional: #{condition.inspect}"
           else
@@ -107,15 +107,23 @@ module SchemaExpectations
         end
       end
 
+      def columns
+        @model.columns
+      end
+
+      def column_names
+        columns.map { |column| column.name.to_sym }
+      end
+
       def present_attributes
         present_attributes = unconditional_presence_validators.
           flat_map(&:attributes).uniq
-        present_attributes &= @model.columns.map(&:name).map(&:to_sym)
-        present_attributes
+        present_attributes & column_names
       end
 
-      def not_null_columns
-        @model.columns.select { |column| !column.null }.map(&:name).map(&:to_sym)
+      def not_null_column_names
+        columns.select { |column| !column.null }.
+          map { |column| column.name.to_sym }
       end
 
       def filter_attributes(attributes)
