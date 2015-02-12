@@ -7,3 +7,4 @@ gem 'activerecord'
 gem 'sqlite3'
 
 gem 'pry'
+gem 'rake'
