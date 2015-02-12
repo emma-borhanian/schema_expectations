@@ -19,7 +19,7 @@ describe :validate_schema_nullable do
 
   specify 'doesnt raise extraneous exceptions from timestamps', :active_record do
     create_table :records do |t|
-      t.timestamps
+      t.timestamps null: false
     end
 
     stub_const('Record', Class.new(ActiveRecord::Base))
