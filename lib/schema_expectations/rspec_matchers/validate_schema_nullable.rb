@@ -2,6 +2,37 @@ require 'rspec/expectations'
 
 module SchemaExpectations
   module RSpecMatchers
+    # The `validate_schema_nullable` matcher test that an ActiveRecord model
+    # has unconditional presence validation on columns with `NOT NULL` constraints,
+    # and vice versa.
+    #
+    # For example, we can assert that the model and database are consistent
+    # on whether `Record#name` should be present:
+    #
+    #     create_table :records do |t|
+    #       t.string :name, null: false
+    #     end
+
+    #     class Record < ActiveRecord::Base
+    #       validates :name, presence: true
+    #     end
+    #
+    #     # RSpec
+    #     describe Record do
+    #       it { should validate_schema_nullable }
+    #     end
+    #
+    # You can restrict the columns tested:
+    #
+    #     # RSpec
+    #     describe Record do
+    #       it { should validate_schema_nullable.only(:name) }
+    #       it { should validate_schema_nullable.except(:name) }
+    #     end
+    #
+    # The `id` column is automatically skipped.
+    #
+    # @return [ValidateSchemaNullableMatcher]
     def validate_schema_nullable
       ValidateSchemaNullableMatcher.new
     end
@@ -38,6 +69,9 @@ module SchemaExpectations
         errors.join(', ')
       end
 
+      # Specifies a list of columns to restrict matcher
+      #
+      # @return [ValidateSchemaNullableMatcher] self
       def only(*args)
         fail 'cannot use only and except' if @except
         @only = Array(args)
@@ -45,6 +79,9 @@ module SchemaExpectations
         self
       end
 
+      # Specifies a list of columns for matcher to ignore
+      #
+      # @return [ValidateSchemaNullableMatcher] self
       def except(*args)
         fail 'cannot use only and except' if @only
         @except = Array(args)

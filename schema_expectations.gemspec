@@ -26,6 +26,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'pry'
   gem.add_development_dependency 'rake', '~> 10.4'
+  gem.add_development_dependency 'yard', '~> 0.8.7'
 
   # tests
   gem.add_development_dependency 'codeclimate-test-reporter'
