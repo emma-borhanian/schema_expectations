@@ -37,7 +37,6 @@ describe :validate_schema_nullable do
     end
 
     stub_const('Record', Class.new(ActiveRecord::Base))
-
     Record.instance_eval do
       validates :not_null_present, presence: true
       validates :nullable_present, presence: true
@@ -58,8 +57,8 @@ describe :validate_schema_nullable do
       expect(Record).to validate_schema_nullable.only(:nullable_present)
     end.to raise_error 'nullable_present has unconditional presence validation but is missing NOT NULL'
 
+    stub_const('Record', Class.new(ActiveRecord::Base))
     Record.instance_eval do
-      clear_validators!
       validates :not_null_present, presence: true, on: :create
     end
     expect(Record).to_not validate_schema_nullable.only(:not_null_present)
@@ -67,8 +66,8 @@ describe :validate_schema_nullable do
       expect(Record).to validate_schema_nullable.only(:not_null_present)
     end.to raise_error 'not_null_present is NOT NULL but its presence validator was conditional: {:on=>:create}'
 
+    stub_const('Record', Class.new(ActiveRecord::Base))
     Record.instance_eval do
-      clear_validators!
       validates :not_null_present, presence: true, if: ->{ false }
     end
     expect(Record).to_not validate_schema_nullable.only(:not_null_present)
@@ -76,8 +75,8 @@ describe :validate_schema_nullable do
       expect(Record).to validate_schema_nullable.only(:not_null_present)
     end.to raise_error /\Anot_null_present is NOT NULL but its presence validator was conditional: {:if=>\#<Proc:.*>}\z/
 
+    stub_const('Record', Class.new(ActiveRecord::Base))
     Record.instance_eval do
-      clear_validators!
       validates :not_null_present, presence: true, unless: ->{ true }
     end
     expect(Record).to_not validate_schema_nullable.only(:not_null_present)
@@ -85,8 +84,8 @@ describe :validate_schema_nullable do
       expect(Record).to validate_schema_nullable.only(:not_null_present)
     end.to raise_error /\Anot_null_present is NOT NULL but its presence validator was conditional: {:unless=>\#<Proc:.*>}\z/
 
+    stub_const('Record', Class.new(ActiveRecord::Base))
     Record.instance_eval do
-      clear_validators!
       validates :not_null_present, presence: true, allow_nil: true
     end
     expect(Record).to_not validate_schema_nullable.only(:not_null_present)
@@ -94,8 +93,8 @@ describe :validate_schema_nullable do
       expect(Record).to validate_schema_nullable.only(:not_null_present)
     end.to raise_error 'not_null_present is NOT NULL but its presence validator was conditional: {:allow_nil=>true}'
 
+    stub_const('Record', Class.new(ActiveRecord::Base))
     Record.instance_eval do
-      clear_validators!
       validates :not_null_present, presence: true, allow_blank: true
     end
     expect(Record).to_not validate_schema_nullable.only(:not_null_present)

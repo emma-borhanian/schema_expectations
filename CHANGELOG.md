@@ -4,6 +4,7 @@
 
 - `validate_schema_nullable` skips `created_at` and `updated_at`
 - `validate_schema_nullable.only(:id, :created_at, :updated_at)` works
+- support activerecord 3.1 to 4.2
 
 ### 0.0.1 (February 12, 2015)
 
