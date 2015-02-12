@@ -17,6 +17,16 @@ describe :validate_schema_nullable do
     expect(Record.new).to_not validate_schema_nullable.only(:wrong)
   end
 
+  specify 'doesnt raise extraneous exceptions from timestamps', :active_record do
+    create_table :records do |t|
+      t.timestamps
+    end
+
+    stub_const('Record', Class.new(ActiveRecord::Base))
+
+    expect(Record.new).to validate_schema_nullable
+  end
+
   specify 'asserts that presence validations match NOT NULL', :active_record do
     create_table :records do |t|
       t.string :not_null, null: false
