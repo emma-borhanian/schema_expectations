@@ -1,6 +1,6 @@
 # Schema Expectations Changelog
 
-# git master
+### 0.0.1 (February 12, 2015)
 
 - `validate_schema_nullable` supports being called on AR instances
 - documented `validate_schema_nullable`
