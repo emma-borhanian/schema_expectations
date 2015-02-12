@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/emma-borhanian/schema_expectations.svg?branch=master)](https://travis-ci.org/emma-borhanian/schema_expectations)
+
 # Work in progress
 
 # Schema Expectations
