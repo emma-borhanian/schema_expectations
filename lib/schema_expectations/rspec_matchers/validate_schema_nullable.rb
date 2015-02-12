@@ -43,8 +43,8 @@ module SchemaExpectations
         fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
 
         @model = model
-        @not_null_columns = filter_attributes(not_null_columns(model))
-        @present_attributes = filter_attributes(present_attributes(model))
+        @not_null_columns = filter_attributes(not_null_columns)
+        @present_attributes = filter_attributes(present_attributes)
         @not_null_columns == @present_attributes
       end
 
@@ -59,7 +59,7 @@ module SchemaExpectations
         end
 
         (@not_null_columns - @present_attributes).each do |attribute|
-          if condition = validator_condition(@model, attribute)
+          if condition = validator_condition(attribute)
             errors << "#{attribute} is NOT NULL but its presence validator was conditional: #{condition.inspect}"
           else
             errors << "#{attribute} is NOT NULL but has no presence validation"
@@ -91,14 +91,14 @@ module SchemaExpectations
 
       private
 
-      def presence_validators(model)
-        presence_validators = model.validators.select do |validator|
+      def presence_validators
+        presence_validators = @model.validators.select do |validator|
           validator.kind == :presence
         end
       end
 
-      def unconditional_presence_validators(model)
-        presence_validators(model).select do |validator|
+      def unconditional_presence_validators
+        presence_validators.select do |validator|
           keep = %i(on if unless).all? do |option_key|
             Array(validator.options[option_key]).empty?
           end
@@ -107,15 +107,15 @@ module SchemaExpectations
         end
       end
 
-      def present_attributes(model)
-        present_attributes = unconditional_presence_validators(model).
+      def present_attributes
+        present_attributes = unconditional_presence_validators.
           flat_map(&:attributes).uniq
-        present_attributes &= model.columns.map(&:name).map(&:to_sym)
+        present_attributes &= @model.columns.map(&:name).map(&:to_sym)
         present_attributes
       end
 
-      def not_null_columns(model)
-        model.columns.select { |column| !column.null }.map(&:name).map(&:to_sym)
+      def not_null_columns
+        @model.columns.select { |column| !column.null }.map(&:name).map(&:to_sym)
       end
 
       def filter_attributes(attributes)
@@ -125,8 +125,8 @@ module SchemaExpectations
         attributes
       end
 
-      def validator_condition(model, attribute)
-        validators = presence_validators(model).select do |validator|
+      def validator_condition(attribute)
+        validators = presence_validators.select do |validator|
           validator.attributes.include? attribute
         end
 
