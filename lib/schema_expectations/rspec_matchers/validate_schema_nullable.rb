@@ -30,7 +30,8 @@ module SchemaExpectations
     #       it { should validate_schema_nullable.except(:name) }
     #     end
     #
-    # The `id` column is automatically skipped.
+    # The `id`, `created_at`, and `updated_at` columns are automatically skipped,
+    # but may be included using `only`.
     #
     # @return [ValidateSchemaNullableMatcher]
     def validate_schema_nullable
@@ -129,7 +130,7 @@ module SchemaExpectations
       def filter_attributes(attributes)
         attributes &= @only if @only
         attributes -= @except if @except
-        attributes -= [:id]
+        attributes -= [:id, :updated_at, :created_at] unless @only
         attributes
       end
 
