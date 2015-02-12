@@ -1,12 +1,6 @@
-begin
-  require 'rspec/core'
-rescue LoadError
-end
+require 'rspec/core'
+require 'schema_expectations/rspec_matchers'
 
-if defined?(RSpec)
-  require 'schema_expectations/rspec_matchers'
-
-  RSpec.configure do |config|
-    config.include SchemaExpectations::RSpecMatchers, type: :model
-  end
+RSpec.configure do |config|
+  config.include SchemaExpectations::RSpecMatchers, type: :model
 end
