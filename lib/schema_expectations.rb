@@ -1,1 +1,1 @@
-require 'schema_expectations/rspec_matchers'
+require 'schema_expectations/rspec'
