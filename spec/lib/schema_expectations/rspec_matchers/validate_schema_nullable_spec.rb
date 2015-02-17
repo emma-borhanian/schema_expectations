@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe :validate_schema_nullable do
+describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher do
   specify 'works on instances', :active_record do
     create_table :records do |t|
       t.string :name, null: false
