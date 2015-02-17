@@ -132,7 +132,7 @@ module SchemaExpectations
       def attribute_to_column_names(attribute)
         reflection = @model.reflect_on_association(attribute)
 
-        if reflection && reflection.belongs_to? && reflection.polymorphic?
+        if reflection && reflection.belongs_to? && reflection.options.key?(:polymorphic)
           [reflection.foreign_key, reflection.foreign_type]
         elsif reflection && reflection.belongs_to?
           [reflection.foreign_key]
