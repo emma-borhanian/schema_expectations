@@ -8,6 +8,8 @@
 - support rspec 3.0 to 3.2
 - `validate_schema_nullable` #failure_message_when_negated works
 - `validate_schema_nullable` #description works
+- `validate_schema_nullable` supports belongs_to association validators
+- `validate_schema_nullable` supports polymorphic belongs_to association validators
 
 ### 0.0.1 (February 12, 2015)
 

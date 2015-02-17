@@ -44,15 +44,12 @@ module SchemaExpectations
         fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
 
         @model = model
-        @not_null_column_names = filter_column_names(not_null_column_names)
-        @present_column_names = filter_column_names(present_column_names)
+        @not_null_column_names = filter_column_names(not_null_column_names).sort
+        @present_column_names = filter_column_names(present_column_names).sort
         @not_null_column_names == @present_column_names
       end
 
       def failure_message
-        @not_null_column_names.sort!
-        @present_column_names.sort!
-
         errors = []
 
         (@present_column_names - @not_null_column_names).each do |column_name|
@@ -127,18 +124,20 @@ module SchemaExpectations
       def present_column_names
         present_column_names = unconditional_presence_validators.
           flat_map(&:attributes).uniq.
-          map(&method(:attribute_to_column_name))
+          flat_map(&method(:attribute_to_column_names))
 
         present_column_names & column_names
       end
 
-      def attribute_to_column_name(attribute)
+      def attribute_to_column_names(attribute)
         reflection = @model.reflect_on_association(attribute)
 
-        if reflection && reflection.belongs_to?
-          reflection.foreign_key
+        if reflection && reflection.belongs_to? && reflection.polymorphic?
+          [reflection.foreign_key, reflection.foreign_type]
+        elsif reflection && reflection.belongs_to?
+          [reflection.foreign_key]
         else
-          attribute
+          [attribute]
         end
       end
 
@@ -157,7 +156,7 @@ module SchemaExpectations
       def validator_condition(column_name)
         validators = presence_validators.select do |validator|
           validator.attributes.any? do |attribute|
-            column_name == attribute_to_column_name(attribute)
+            attribute_to_column_names(attribute).include?(column_name)
           end
         end
 
