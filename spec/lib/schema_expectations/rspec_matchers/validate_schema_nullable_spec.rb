@@ -8,6 +8,9 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
     end
 
+    let(:not_null_attribute) { :not_null }
+    let(:nullable_attribute) { :nullable }
+
     before do
       create_table :records do |t|
         t.string :not_null, null: false
@@ -36,7 +39,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     end
 
     context 'with not_null present' do
-      before { validates :not_null, presence: true }
+      before { validates not_null_attribute, presence: true }
 
       it { is_expected.to validate_schema_nullable }
 
@@ -54,7 +57,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     end
 
     context 'with nullable present' do
-      before { validates :nullable, presence: true }
+      before { validates nullable_attribute, presence: true }
 
       it { is_expected.to_not validate_schema_nullable }
 
@@ -73,8 +76,8 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
 
     context 'with nullable and not_null present' do
       before do
-        validates :not_null, presence: true
-        validates :nullable, presence: true
+        validates not_null_attribute, presence: true
+        validates nullable_attribute, presence: true
       end
 
       it { is_expected.to_not validate_schema_nullable }
@@ -93,7 +96,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     end
 
     specify '#failure_message_when_negated' do
-      validates :not_null, presence: true
+      validates not_null_attribute, presence: true
 
       expect do
         is_expected.to_not validate_schema_nullable
@@ -111,7 +114,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
 
     context 'ignores validators with' do
       specify 'on: create' do
-        validates :not_null, presence: true, on: :create
+        validates not_null_attribute, presence: true, on: :create
 
         expect do
           is_expected.to validate_schema_nullable.only(:not_null)
@@ -119,7 +122,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
 
       specify 'if: proc' do
-        validates :not_null, presence: true, if: ->{ false }
+        validates not_null_attribute, presence: true, if: ->{ false }
 
         expect do
           is_expected.to validate_schema_nullable.only(:not_null)
@@ -127,7 +130,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
 
       specify 'unless: proc' do
-        validates :not_null, presence: true, unless: ->{ true }
+        validates not_null_attribute, presence: true, unless: ->{ true }
 
         expect do
           is_expected.to validate_schema_nullable.only(:not_null)
@@ -135,7 +138,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
 
       specify 'allow_nil: true' do
-        validates :not_null, presence: true, allow_nil: true
+        validates not_null_attribute, presence: true, allow_nil: true
 
         expect do
           is_expected.to validate_schema_nullable.only(:not_null)
@@ -143,7 +146,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
 
       specify 'allow_blank: true' do
-        validates :not_null, presence: true, allow_blank: true
+        validates not_null_attribute, presence: true, allow_blank: true
 
         expect do
           is_expected.to validate_schema_nullable.only(:not_null)
@@ -161,6 +164,23 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
   context 'called on instance' do
     include_examples 'Record' do
       subject(:record) { Record.new }
+    end
+  end
+
+  context 'with belongs_to associations' do
+    include_examples 'Record' do
+      let(:not_null_attribute) { :not_null_other_record }
+      let(:nullable_attribute) { :nullable_other_record }
+
+      before do
+        create_table :other_records
+        stub_const('OtherRecord', Class.new(ActiveRecord::Base))
+
+        Record.instance_eval do
+          belongs_to :not_null_other_record, class_name: 'OtherRecord', foreign_key: :not_null
+          belongs_to :nullable_other_record, class_name: 'OtherRecord', foreign_key: :nullable
+        end
+      end
     end
   end
 end

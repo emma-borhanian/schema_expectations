@@ -44,26 +44,26 @@ module SchemaExpectations
         fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
 
         @model = model
-        @not_null_column_names = filter_attributes(not_null_column_names)
-        @present_attributes = filter_attributes(present_attributes)
-        @not_null_column_names == @present_attributes
+        @not_null_column_names = filter_column_names(not_null_column_names)
+        @present_column_names = filter_column_names(present_column_names)
+        @not_null_column_names == @present_column_names
       end
 
       def failure_message
         @not_null_column_names.sort!
-        @present_attributes.sort!
+        @present_column_names.sort!
 
         errors = []
 
-        (@present_attributes - @not_null_column_names).each do |attribute|
-          errors << "#{attribute} has unconditional presence validation but is missing NOT NULL"
+        (@present_column_names - @not_null_column_names).each do |column_name|
+          errors << "#{column_name} has unconditional presence validation but is missing NOT NULL"
         end
 
-        (@not_null_column_names - @present_attributes).each do |attribute|
-          if condition = validator_condition(attribute)
-            errors << "#{attribute} is NOT NULL but its presence validator was conditional: #{condition.inspect}"
+        (@not_null_column_names - @present_column_names).each do |column_name|
+          if condition = validator_condition(column_name)
+            errors << "#{column_name} is NOT NULL but its presence validator was conditional: #{condition.inspect}"
           else
-            errors << "#{attribute} is NOT NULL but has no presence validation"
+            errors << "#{column_name} is NOT NULL but has no presence validation"
           end
         end
 
@@ -124,10 +124,22 @@ module SchemaExpectations
         columns.map { |column| column.name.to_sym }
       end
 
-      def present_attributes
-        present_attributes = unconditional_presence_validators.
-          flat_map(&:attributes).uniq
-        present_attributes & column_names
+      def present_column_names
+        present_column_names = unconditional_presence_validators.
+          flat_map(&:attributes).uniq.
+          map(&method(:attribute_to_column_name))
+
+        present_column_names & column_names
+      end
+
+      def attribute_to_column_name(attribute)
+        reflection = @model.reflect_on_association(attribute)
+
+        if reflection && reflection.belongs_to?
+          reflection.foreign_key
+        else
+          attribute
+        end
       end
 
       def not_null_column_names
@@ -135,16 +147,18 @@ module SchemaExpectations
           map { |column| column.name.to_sym }
       end
 
-      def filter_attributes(attributes)
-        attributes &= @only if @only
-        attributes -= @except if @except
-        attributes -= [:id, :updated_at, :created_at] unless @only
-        attributes
+      def filter_column_names(column_names)
+        column_names &= @only if @only
+        column_names -= @except if @except
+        column_names -= [:id, :updated_at, :created_at] unless @only
+        column_names
       end
 
-      def validator_condition(attribute)
+      def validator_condition(column_name)
         validators = presence_validators.select do |validator|
-          validator.attributes.include? attribute
+          validator.attributes.any? do |attribute|
+            column_name == attribute_to_column_name(attribute)
+          end
         end
 
         validators.each do |validator|
