@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher do
-  specify 'works on instances', :active_record do
+describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :active_record do
+  specify 'works on instances' do
     create_table :records do |t|
       t.string :name, null: false
       t.string :wrong
@@ -17,7 +17,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher do
     expect(Record.new).to_not validate_schema_nullable.only(:wrong)
   end
 
-  specify 'doesnt raise extraneous exceptions from timestamps', :active_record do
+  specify 'doesnt raise extraneous exceptions from timestamps' do
     create_table :records do |t|
       t.timestamps null: false
     end
@@ -27,7 +27,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher do
     expect(Record).to validate_schema_nullable
   end
 
-  specify 'asserts that presence validations match NOT NULL', :active_record do
+  specify 'asserts that presence validations match NOT NULL' do
     create_table :records do |t|
       t.string :not_null, null: false
       t.string :not_null_present, null: false
