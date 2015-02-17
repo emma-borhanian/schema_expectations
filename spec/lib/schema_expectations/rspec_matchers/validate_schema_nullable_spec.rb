@@ -1,105 +1,166 @@
 require 'spec_helper'
 
 describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :active_record do
-  specify 'works on instances' do
-    create_table :records do |t|
-      t.string :name, null: false
-      t.string :wrong
+  shared_examples_for 'Record' do
+    def validates(*args)
+      Record.instance_eval do
+        validates *args
+      end
     end
 
-    stub_const('Record', Class.new(ActiveRecord::Base))
+    before do
+      create_table :records do |t|
+        t.string :not_null, null: false
+        t.string :nullable
+      end
 
-    Record.instance_eval do
-      validates :name, :wrong, presence: true
+      stub_const('Record', Class.new(ActiveRecord::Base))
     end
 
-    expect(Record.new).to validate_schema_nullable.only(:name)
-    expect(Record.new).to_not validate_schema_nullable.only(:wrong)
+    subject(:record) { Record }
+
+    context 'with no validations' do
+      it { is_expected.to_not validate_schema_nullable }
+
+      specify '#only' do
+        is_expected.to_not validate_schema_nullable.only(:not_null, :nullable)
+        is_expected.to_not validate_schema_nullable.only(:not_null)
+        is_expected.to validate_schema_nullable.only(:nullable)
+      end
+
+      specify '#except' do
+        is_expected.to validate_schema_nullable.except(:not_null, :nullable)
+        is_expected.to validate_schema_nullable.except(:not_null)
+        is_expected.to_not validate_schema_nullable.except(:nullable)
+      end
+    end
+
+    context 'with not_null present' do
+      before { validates :not_null, presence: true }
+
+      it { is_expected.to validate_schema_nullable }
+
+      specify '#only' do
+        is_expected.to validate_schema_nullable.only(:not_null, :nullable)
+        is_expected.to validate_schema_nullable.only(:not_null)
+        is_expected.to validate_schema_nullable.only(:nullable)
+      end
+
+      specify '#except' do
+        is_expected.to validate_schema_nullable.except(:not_null, :nullable)
+        is_expected.to validate_schema_nullable.except(:not_null)
+        is_expected.to validate_schema_nullable.except(:nullable)
+      end
+    end
+
+    context 'with nullable present' do
+      before { validates :nullable, presence: true }
+
+      it { is_expected.to_not validate_schema_nullable }
+
+      specify '#only' do
+        is_expected.to_not validate_schema_nullable.only(:not_null, :nullable)
+        is_expected.to_not validate_schema_nullable.only(:not_null)
+        is_expected.to_not validate_schema_nullable.only(:nullable)
+      end
+
+      specify '#except' do
+        is_expected.to validate_schema_nullable.except(:not_null, :nullable)
+        is_expected.to_not validate_schema_nullable.except(:not_null)
+        is_expected.to_not validate_schema_nullable.except(:nullable)
+      end
+    end
+
+    context 'with nullable and not_null present' do
+      before do
+        validates :not_null, presence: true
+        validates :nullable, presence: true
+      end
+
+      it { is_expected.to_not validate_schema_nullable }
+
+      specify '#only' do
+        is_expected.to_not validate_schema_nullable.only(:not_null, :nullable)
+        is_expected.to validate_schema_nullable.only(:not_null)
+        is_expected.to_not validate_schema_nullable.only(:nullable)
+      end
+
+      specify '#except' do
+        is_expected.to validate_schema_nullable.except(:not_null, :nullable)
+        is_expected.to_not validate_schema_nullable.except(:not_null)
+        is_expected.to validate_schema_nullable.except(:nullable)
+      end
+    end
+
+    specify '#failure_message_when_negated' do
+      validates :not_null, presence: true
+
+      expect do
+        is_expected.to_not validate_schema_nullable
+      end.to raise_error 'should not match NOT NULL with its presence validation but does'
+    end
+
+    specify 'doesnt raise extraneous exceptions from timestamps' do
+      create_table :records, force: true do |t|
+        t.timestamps null: false
+      end
+      Record.reset_column_information
+
+      is_expected.to validate_schema_nullable
+    end
+
+    context 'ignores validators with' do
+      specify 'on: create' do
+        validates :not_null, presence: true, on: :create
+
+        expect do
+          is_expected.to validate_schema_nullable.only(:not_null)
+        end.to raise_error 'not_null is NOT NULL but its presence validator was conditional: {:on=>:create}'
+      end
+
+      specify 'if: proc' do
+        validates :not_null, presence: true, if: ->{ false }
+
+        expect do
+          is_expected.to validate_schema_nullable.only(:not_null)
+        end.to raise_error /\Anot_null is NOT NULL but its presence validator was conditional: {:if=>\#<Proc:.*>}\z/
+      end
+
+      specify 'unless: proc' do
+        validates :not_null, presence: true, unless: ->{ true }
+
+        expect do
+          is_expected.to validate_schema_nullable.only(:not_null)
+        end.to raise_error /\Anot_null is NOT NULL but its presence validator was conditional: {:unless=>\#<Proc:.*>}\z/
+      end
+
+      specify 'allow_nil: true' do
+        validates :not_null, presence: true, allow_nil: true
+
+        expect do
+          is_expected.to validate_schema_nullable.only(:not_null)
+        end.to raise_error 'not_null is NOT NULL but its presence validator was conditional: {:allow_nil=>true}'
+      end
+
+      specify 'allow_blank: true' do
+        validates :not_null, presence: true, allow_blank: true
+
+        expect do
+          is_expected.to validate_schema_nullable.only(:not_null)
+        end.to raise_error 'not_null is NOT NULL but its presence validator was conditional: {:allow_blank=>true}'
+      end
+    end
   end
 
-  specify 'doesnt raise extraneous exceptions from timestamps' do
-    create_table :records do |t|
-      t.timestamps null: false
+  context 'called on class' do
+    include_examples 'Record' do
+      subject(:record) { Record }
     end
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-
-    expect(Record).to validate_schema_nullable
   end
 
-  specify 'asserts that presence validations match NOT NULL' do
-    create_table :records do |t|
-      t.string :not_null, null: false
-      t.string :not_null_present, null: false
-
-      t.string :nullable
-      t.string :nullable_present
+  context 'called on instance' do
+    include_examples 'Record' do
+      subject(:record) { Record.new }
     end
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true
-      validates :nullable_present, presence: true
-    end
-
-    expect(Record).to validate_schema_nullable.only(:not_null_present, :nullable)
-    expect(Record).to validate_schema_nullable.except(:not_null, :nullable_present)
-
-    expect(Record).to_not validate_schema_nullable
-    expect(Record).to_not validate_schema_nullable.only(:not_null)
-    expect(Record).to_not validate_schema_nullable.only(:nullable_present)
-
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null)
-    end.to raise_error 'not_null is NOT NULL but has no presence validation'
-
-    expect do
-      expect(Record).to validate_schema_nullable.only(:nullable_present)
-    end.to raise_error 'nullable_present has unconditional presence validation but is missing NOT NULL'
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true, on: :create
-    end
-    expect(Record).to_not validate_schema_nullable.only(:not_null_present)
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null_present)
-    end.to raise_error 'not_null_present is NOT NULL but its presence validator was conditional: {:on=>:create}'
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true, if: ->{ false }
-    end
-    expect(Record).to_not validate_schema_nullable.only(:not_null_present)
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null_present)
-    end.to raise_error /\Anot_null_present is NOT NULL but its presence validator was conditional: {:if=>\#<Proc:.*>}\z/
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true, unless: ->{ true }
-    end
-    expect(Record).to_not validate_schema_nullable.only(:not_null_present)
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null_present)
-    end.to raise_error /\Anot_null_present is NOT NULL but its presence validator was conditional: {:unless=>\#<Proc:.*>}\z/
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true, allow_nil: true
-    end
-    expect(Record).to_not validate_schema_nullable.only(:not_null_present)
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null_present)
-    end.to raise_error 'not_null_present is NOT NULL but its presence validator was conditional: {:allow_nil=>true}'
-
-    stub_const('Record', Class.new(ActiveRecord::Base))
-    Record.instance_eval do
-      validates :not_null_present, presence: true, allow_blank: true
-    end
-    expect(Record).to_not validate_schema_nullable.only(:not_null_present)
-    expect do
-      expect(Record).to validate_schema_nullable.only(:not_null_present)
-    end.to raise_error 'not_null_present is NOT NULL but its presence validator was conditional: {:allow_blank=>true}'
   end
 end

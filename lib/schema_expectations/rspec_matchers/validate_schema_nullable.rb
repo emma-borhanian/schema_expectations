@@ -70,6 +70,14 @@ module SchemaExpectations
         errors.join(', ')
       end
 
+      def failure_message_when_negated
+        'should not match NOT NULL with its presence validation but does'
+      end
+
+      def description
+        'validate NOT NULL columns are present'
+      end
+
       # Specifies a list of columns to restrict matcher
       #
       # @return [ValidateSchemaNullableMatcher] self
