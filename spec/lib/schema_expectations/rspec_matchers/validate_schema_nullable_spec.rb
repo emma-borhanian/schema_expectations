@@ -24,7 +24,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher do
 
     stub_const('Record', Class.new(ActiveRecord::Base))
 
-    expect(Record.new).to validate_schema_nullable
+    expect(Record).to validate_schema_nullable
   end
 
   specify 'asserts that presence validations match NOT NULL', :active_record do
