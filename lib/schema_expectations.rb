@@ -1,4 +1,5 @@
 require 'schema_expectations/version'
+require 'schema_expectations/config'
 
 begin
   require 'rspec/core'

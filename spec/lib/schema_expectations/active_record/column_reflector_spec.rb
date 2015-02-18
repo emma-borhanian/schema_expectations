@@ -26,20 +26,62 @@ module SchemaExpectations
             to eq %i(empty_default null_default no_default)
         end
 
-        # TODO: support `default_function` (postgres)
-        pending 'filters default functions', :postgres do
-          create_table :records do |t|
-            t.integer :function_default, default: 'RAND()'
-            t.uuid :uuid_default
-            t.stirng :no_default
+        context 'default functions', :postgresql, active_record_version: '>= 4.0' do
+          specify 'are filtered' do
+            create_table :records do |t|
+              t.uuid :uuid_default, default: 'uuid_generate_v4()'
+              t.string :no_default
+            end
+            execute <<-SQL
+              -- not possible via create_table syntax right now
+              ALTER TABLE records
+                ADD COLUMN function_default float DEFAULT random();
+            SQL
+            stub_const('Record', Class.new(::ActiveRecord::Base))
+
+            expect(Record.columns_hash['function_default'].default).to be_nil
+            expect(Record.columns_hash['uuid_default'].default).to be_nil
+            expect(Record.columns_hash['function_default'].default_function).to_not be_nil
+            expect(Record.columns_hash['uuid_default'].default_function).to_not be_nil
+
+            expect(column_reflector.column_names).
+              to eq %i(id uuid_default no_default function_default)
+
+            expect(column_reflector.without_present_default.column_names).
+              to eq %i(no_default)
           end
-          stub_const('Record', Class.new(::ActiveRecord::Base))
 
-          expect(column_reflector.column_names).
-            to eq %i(id function_default uuid_default no_default)
+          specify 'logs if it encounters an error trying to run default function' do
+            create_table :records
+            execute <<-SQL
+              CREATE FUNCTION raise_error() RETURNS varchar
+                AS $BODY$
+                  BEGIN
+                    RAISE 'test exception';
+                  END;
+                $BODY$
+                LANGUAGE plpgsql;
 
-          expect(column_reflector.without_present_default.column_names).
-            to eq %i(no_default)
+              -- not possible via create_table syntax right now
+              ALTER TABLE records
+                ADD COLUMN function_default varchar DEFAULT raise_error();
+            SQL
+            stub_const('Record', Class.new(::ActiveRecord::Base))
+
+            expect(Record.columns_hash['function_default'].default).to be_nil
+            expect(Record.columns_hash['function_default'].default_function).to_not be_nil
+
+            expect(column_reflector.column_names).
+              to eq %i(id function_default)
+
+            expect(SchemaExpectations.error_logger).to receive(:error).once do |message|
+              expect(message).to include 'SchemaExpectations: encountered error running SELECT raise_error()'
+              expect(message).to include 'PG::RaiseException: ERROR:  test exception'
+              expect(message).to include ': SELECT raise_error()'
+            end
+            expect(column_reflector.without_present_default.column_names).
+              to eq %i(function_default)
+          end
         end
       end
 

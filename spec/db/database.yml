@@ -1,0 +1,8 @@
+sqlite3:
+  adapter: sqlite3
+  database: ':memory:'
+postgresql:
+  adapter: postgresql
+  encoding: unicode
+  database: schema_expectations_test
+  username: postgres

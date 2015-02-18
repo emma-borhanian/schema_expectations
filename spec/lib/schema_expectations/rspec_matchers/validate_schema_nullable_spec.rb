@@ -149,7 +149,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     end
 
     specify 'when primary_key is not id' do
-      create_table :records, force: true do |t|
+      create_table :records, force: true, id: false do |t|
         t.integer :pk
       end
       Record.reset_column_information
@@ -159,8 +159,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         validates :pk, presence: true
       end
 
-      is_expected.to validate_schema_nullable.only(:pk)
-      is_expected.to_not validate_schema_nullable.only(:id)
+      is_expected.to validate_schema_nullable
     end
 
     specify 'doesnt raise extraneous exceptions from timestamps' do

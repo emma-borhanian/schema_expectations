@@ -10,6 +10,8 @@
 - `validate_schema_nullable` supports polymorphic belongs_to association validators
 - `validate_schema_nullable` skips primary key and timestamps
 - `validate_schema_nullable` is aware of columns with default values
+- `validate_schema_nullable` is aware of columns with default functions
+- postgres support
 
 ### 0.0.1 (February 12, 2015)
 
