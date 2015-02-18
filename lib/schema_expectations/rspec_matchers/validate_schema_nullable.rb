@@ -4,7 +4,7 @@ require 'schema_expectations/active_record/column_reflector'
 
 module SchemaExpectations
   module RSpecMatchers
-    # The `validate_schema_nullable` matcher test that an ActiveRecord model
+    # The `validate_schema_nullable` matcher tests that an ActiveRecord model
     # has unconditional presence validation on columns with `NOT NULL` constraints,
     # and vice versa.
     #
