@@ -121,12 +121,16 @@ module SchemaExpectations
         columns.map { |column| column.name.to_sym }
       end
 
-      def present_column_names
+      def present_attributes
         present_column_names = unconditional_presence_validators.
-          flat_map(&:attributes).uniq.
+          flat_map(&:attributes).uniq
+      end
+
+      def present_column_names
+        attribute_column_names = present_attributes.
           flat_map(&method(:attribute_to_column_names))
 
-        present_column_names & column_names
+        attribute_column_names & column_names
       end
 
       def attribute_to_column_names(attribute)
@@ -153,14 +157,16 @@ module SchemaExpectations
         column_names
       end
 
-      def validator_condition(column_name)
-        validators = presence_validators.select do |validator|
+      def validators_for_column(column_name)
+        presence_validators.select do |validator|
           validator.attributes.any? do |attribute|
             attribute_to_column_names(attribute).include?(column_name)
           end
         end
+      end
 
-        validators.each do |validator|
+      def validator_condition(column_name)
+        validators_for_column(column_name).each do |validator|
           condition = [:on, :if, :unless].detect do |option_key|
             !Array(validator.options[option_key]).empty?
           end
