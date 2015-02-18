@@ -32,8 +32,7 @@ module SchemaExpectations
     #       it { should validate_schema_nullable.except(:name) }
     #     end
     #
-    # The `id`, `created_at`, and `updated_at` columns are automatically skipped,
-    # but may be included using `only`.
+    # The primary key and timestamp columns are automatically skipped.
     #
     # @return [ValidateSchemaNullableMatcher]
     def validate_schema_nullable
@@ -112,7 +111,7 @@ module SchemaExpectations
 
       def present_column_names
         @column_reflector.for_attributes(*present_attributes).
-          column_names
+          without_present_default.column_names
       end
 
       def column_name_to_attribute(column_name)
@@ -123,13 +122,13 @@ module SchemaExpectations
       end
 
       def not_null_column_names
-        @column_reflector.not_null.column_names
+        @column_reflector.not_null.
+          without_present_default.column_names
       end
 
       def filter_column_names(column_names)
         column_names &= @only if @only
         column_names -= @except if @except
-        column_names -= [:id, :updated_at, :created_at] unless @only
         column_names
       end
 

@@ -1,3 +1,5 @@
+require 'active_support/core_ext/object/blank'
+
 module SchemaExpectations
   module ActiveRecord
     class ColumnReflector # :nodoc:
@@ -16,6 +18,10 @@ module SchemaExpectations
 
       def for_attributes(*attributes)
         new_with_columns attributes_to_columns(*attributes)
+      end
+
+      def without_present_default
+        new_with_columns @columns.reject(&method(:present_default_column?))
       end
 
       private
@@ -41,6 +47,16 @@ module SchemaExpectations
         else
           [attribute]
         end
+      end
+
+      def present_default_column?(column)
+        !column.default.blank? ||
+          column.name.to_s == @model.primary_key.to_s ||
+          @model.record_timestamps && all_timestamp_attributes.include?(column.name.to_sym)
+      end
+
+      def all_timestamp_attributes
+        @all_timestamp_attributes ||= Record.new.send(:all_timestamp_attributes).map(&:to_sym)
       end
     end
   end

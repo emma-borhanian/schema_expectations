@@ -148,6 +148,21 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end.to raise_error 'should not match NOT NULL with its presence validation but does'
     end
 
+    specify 'when primary_key is not id' do
+      create_table :records, force: true do |t|
+        t.integer :pk
+      end
+      Record.reset_column_information
+      Record.instance_eval do
+        self.primary_key = 'pk'
+
+        validates :pk, presence: true
+      end
+
+      is_expected.to validate_schema_nullable.only(:pk)
+      is_expected.to_not validate_schema_nullable.only(:id)
+    end
+
     specify 'doesnt raise extraneous exceptions from timestamps' do
       create_table :records, force: true do |t|
         t.timestamps null: false
