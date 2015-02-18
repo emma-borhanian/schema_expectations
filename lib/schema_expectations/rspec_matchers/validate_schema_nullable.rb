@@ -1,4 +1,5 @@
 require 'rspec/expectations'
+require 'schema_expectations/active_record/validation_reflector'
 
 module SchemaExpectations
   module RSpecMatchers
@@ -41,6 +42,7 @@ module SchemaExpectations
     class ValidateSchemaNullableMatcher
       def matches?(model)
         @model = cast_model model
+        @validation_reflector = ActiveRecord::ValidationReflector.new(@model)
         @not_null_column_names = filter_column_names(not_null_column_names).sort
         @present_column_names = filter_column_names(present_column_names).sort
         @not_null_column_names == @present_column_names
@@ -54,8 +56,8 @@ module SchemaExpectations
         end
 
         (@not_null_column_names - @present_column_names).each do |column_name|
-          if condition = validator_condition(column_name)
-            errors << "#{column_name} is NOT NULL but its presence validator was conditional: #{condition.inspect}"
+          if conditions = validator_conditions_for_column_name(column_name)
+            errors << "#{column_name} is NOT NULL but its presence validator was conditional: #{conditions.inspect}"
           else
             errors << "#{column_name} is NOT NULL but has no presence validation"
           end
@@ -95,27 +97,11 @@ module SchemaExpectations
       private
 
       def cast_model(model)
-        model = model.class if model.is_a?(ActiveRecord::Base)
-        unless model.is_a?(Class) && model.ancestors.include?(ActiveRecord::Base)
+        model = model.class if model.is_a?(::ActiveRecord::Base)
+        unless model.is_a?(Class) && model.ancestors.include?(::ActiveRecord::Base)
           fail "#{model.inspect} does not inherit from ActiveRecord::Base"
         end
         model
-      end
-
-      def presence_validators
-        presence_validators = @model.validators.select do |validator|
-          validator.kind == :presence
-        end
-      end
-
-      def unconditional_presence_validators
-        presence_validators.select do |validator|
-          keep = %i(on if unless).all? do |option_key|
-            Array(validator.options[option_key]).empty?
-          end
-
-          keep && !validator.options[:allow_nil] && !validator.options[:allow_blank]
-        end
       end
 
       def columns
@@ -127,8 +113,7 @@ module SchemaExpectations
       end
 
       def present_attributes
-        present_column_names = unconditional_presence_validators.
-          flat_map(&:attributes).uniq
+        @validation_reflector.presence.unconditional.attributes
       end
 
       def present_column_names
@@ -150,6 +135,12 @@ module SchemaExpectations
         end
       end
 
+      def column_name_to_attribute(column_name)
+        @validation_reflector.attributes.detect do |attribute|
+          attribute_to_column_names(attribute).include? column_name
+        end
+      end
+
       def not_null_column_names
         columns.select { |column| !column.null }.
           map { |column| column.name.to_sym }
@@ -162,28 +153,8 @@ module SchemaExpectations
         column_names
       end
 
-      def validators_for_column(column_name)
-        presence_validators.select do |validator|
-          validator.attributes.any? do |attribute|
-            attribute_to_column_names(attribute).include?(column_name)
-          end
-        end
-      end
-
-      def validator_condition(column_name)
-        validators_for_column(column_name).each do |validator|
-          condition = [:on, :if, :unless].detect do |option_key|
-            !Array(validator.options[option_key]).empty?
-          end
-
-          condition ||= [:allow_nil, :allow_blank].detect do |option_key|
-            validator.options[option_key]
-          end
-
-          return { condition => validator.options[condition] } if condition
-        end
-
-        nil
+      def validator_conditions_for_column_name(column_name)
+        @validation_reflector.conditions_for_attribute column_name_to_attribute column_name
       end
     end
   end
