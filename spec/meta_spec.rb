@@ -37,4 +37,8 @@ describe SchemaExpectations do
   specify 'tests connect to sqlite3', :active_record, :sqlite3 do
     expect(ActiveRecord::Base.connection_config[:adapter]).to eq 'sqlite3'
   end
+
+  specify 'tests connect to mysql2', :active_record, :mysql2 do
+    expect(ActiveRecord::Base.connection_config[:adapter]).to eq 'mysql2'
+  end
 end

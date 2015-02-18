@@ -32,6 +32,15 @@ RSpec.configure do |config|
 
   config.after(:each, active_record: true) do
     DatabaseCleaner.clean
+
+    # mysql can't do tables in transactions properly
+    db_config = ActiveRecord::Base.connection_config
+    if db_config[:adapter] == 'mysql2'
+      ActiveRecord::Base.connection.drop_database(db_config[:database])
+      ActiveRecord::Base.connection.create_database(db_config[:database], db_config)
+      execute "USE #{db_config[:database]}"
+    end
+
     ActiveRecord::Base.connection.schema_cache.clear!
   end
 

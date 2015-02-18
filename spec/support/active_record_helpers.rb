@@ -34,6 +34,12 @@ module ActiveRecordHelpers
       ActiveRecord::Base.connection.drop_database(db_config[:database])
       ActiveRecord::Base.connection.create_database(db_config[:database], db_config)
       ActiveRecord::Base.remove_connection
+    when 'mysql2'
+      require 'mysql2'
+      ActiveRecord::Base.establish_connection(db_config.merge(database: nil))
+      ActiveRecord::Base.connection.drop_database(db_config[:database])
+      ActiveRecord::Base.connection.create_database(db_config[:database], db_config)
+      ActiveRecord::Base.remove_connection
     end
 
     ActiveRecord::Base.establish_connection(db)

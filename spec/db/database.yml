@@ -6,3 +6,8 @@ postgresql:
   encoding: unicode
   database: schema_expectations_test
   username: postgres
+mysql2:
+  adapter: mysql2
+  encoding: utf8
+  database: schema_expectations_test
+  username: root

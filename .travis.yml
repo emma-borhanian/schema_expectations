@@ -7,6 +7,7 @@ rvm:
 env:
 - DB=sqlite3
 - DB=postgresql
+- DB=mysql2
 script: bundle exec rake
 gemfile:
 - gemfiles/activerecord_3.1.gemfile
