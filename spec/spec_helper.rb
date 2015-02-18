@@ -1,5 +1,14 @@
-require 'codeclimate-test-reporter'
-CodeClimate::TestReporter.start
+if !ENV['APPRAISAL_INITIALIZED'] || ENV['BUNDLE_GEMFILE'] =~ /default.gemfile\z/
+  if ENV['CI']
+    require 'codeclimate-test-reporter'
+    CodeClimate::TestReporter.start
+  else
+    require 'simplecov'
+    SimpleCov.start do
+      add_filter 'vendor'
+    end
+  end
+end
 
 require 'rspec'
 require 'pry'
