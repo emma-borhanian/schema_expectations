@@ -40,10 +40,7 @@ module SchemaExpectations
 
     class ValidateSchemaNullableMatcher
       def matches?(model)
-        model = model.class if model.is_a?(ActiveRecord::Base)
-        fail "#{model.inspect} does not inherit from ActiveRecord::Base" unless model.ancestors.include?(ActiveRecord::Base)
-
-        @model = model
+        @model = cast_model model
         @not_null_column_names = filter_column_names(not_null_column_names).sort
         @present_column_names = filter_column_names(present_column_names).sort
         @not_null_column_names == @present_column_names
@@ -96,6 +93,14 @@ module SchemaExpectations
       end
 
       private
+
+      def cast_model(model)
+        model = model.class if model.is_a?(ActiveRecord::Base)
+        unless model.is_a?(Class) && model.ancestors.include?(ActiveRecord::Base)
+          fail "#{model.inspect} does not inherit from ActiveRecord::Base"
+        end
+        model
+      end
 
       def presence_validators
         presence_validators = @model.validators.select do |validator|

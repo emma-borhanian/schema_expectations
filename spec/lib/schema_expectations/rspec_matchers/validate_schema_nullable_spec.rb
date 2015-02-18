@@ -31,6 +31,17 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     context 'with no validations' do
       it { is_expected.to_not validate_schema_nullable }
 
+      specify 'error messages' do
+        expect do
+          is_expected.to validate_schema_nullable
+        end.to raise_error do |error|
+          expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
+          not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
+            expect(message).to eq "#{column} is NOT NULL but has no presence validation"
+          end
+        end
+      end
+
       specify '#only' do
         is_expected.to_not validate_schema_nullable.only(*columns)
         is_expected.to_not validate_schema_nullable.only(*not_null_columns)
@@ -67,6 +78,23 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
 
       it { is_expected.to_not validate_schema_nullable }
 
+      specify 'error messages' do
+        expect do
+          is_expected.to validate_schema_nullable
+        end.to raise_error do |error|
+          expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
+          errors = error.message.split(', ')
+
+          nullable_columns.sort.zip(errors.take(nullable_columns.size)) do |column, message|
+            expect(message).to eq "#{column} has unconditional presence validation but is missing NOT NULL"
+          end
+
+          not_null_columns.sort.zip(errors.drop(nullable_columns.size)) do |column, message|
+            expect(message).to eq "#{column} is NOT NULL but has no presence validation"
+          end
+        end
+      end
+
       specify '#only' do
         is_expected.to_not validate_schema_nullable.only(*columns)
         is_expected.to_not validate_schema_nullable.only(*not_null_columns)
@@ -87,6 +115,17 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
       end
 
       it { is_expected.to_not validate_schema_nullable }
+
+      specify 'error messages' do
+        expect do
+          is_expected.to validate_schema_nullable
+        end.to raise_error do |error|
+          expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
+          nullable_columns.sort.zip(error.message.split(', ')) do |column, message|
+            expect(message).to eq "#{column} has unconditional presence validation but is missing NOT NULL"
+          end
+        end
+      end
 
       specify '#only' do
         is_expected.to_not validate_schema_nullable.only(*columns)
@@ -196,6 +235,11 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
     include_examples 'Record' do
       subject(:record) { Record.new }
     end
+  end
+
+  specify 'called on unrecognized object' do
+    expect { expect(double('object')).to validate_schema_nullable }.
+      to raise_error /#<RSpec::Mocks::Double:0x\h* @name="object"> does not inherit from ActiveRecord::Base/
   end
 
   context 'with belongs_to associations' do
