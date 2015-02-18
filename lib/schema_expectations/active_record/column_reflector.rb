@@ -50,9 +50,38 @@ module SchemaExpectations
       end
 
       def present_default_column?(column)
-        !column.default.blank? ||
-          column.name.to_s == @model.primary_key.to_s ||
-          @model.record_timestamps && all_timestamp_attributes.include?(column.name.to_sym)
+        column.default.present? ||
+          primary_key?(column) ||
+          default_timestamp?(column) ||
+          default_function?(column)
+      end
+
+      def primary_key?(column)
+        column.name.to_s == @model.primary_key.to_s
+      end
+
+      def default_timestamp?(column)
+        @model.record_timestamps && all_timestamp_attributes.include?(column.name.to_sym)
+      end
+
+      def default_function?(column)
+        column.respond_to?(:default_function) &&
+          column.default_function &&
+          function_produces_present_value?(column.default_function)
+      end
+
+      def function_produces_present_value?(function)
+        query = "SELECT #{function}"
+        begin
+          result = @model.connection.execute query
+          result.first.values.first.present?
+        rescue => e
+          message = "SchemaExpectations: encountered error running #{query}"
+          message << "\n" << e.message
+          message << "\n" << e.backtrace.join('\n')
+          SchemaExpectations.error_logger.error message
+          false
+        end
       end
 
       def all_timestamp_attributes
