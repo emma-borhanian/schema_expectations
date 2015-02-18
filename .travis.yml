@@ -11,6 +11,7 @@ gemfile:
 - gemfiles/activerecord_4.0.gemfile
 - gemfiles/activerecord_4.1.gemfile
 - gemfiles/activerecord_4.2.gemfile
+- gemfiles/default.gemfile
 - gemfiles/rspec_3.0.gemfile
 - gemfiles/rspec_3.1.gemfile
 - gemfiles/rspec_3.2.gemfile

@@ -29,3 +29,5 @@ end
 appraise 'rspec-3.2' do
   gem 'rspec', '~> 3.2'
 end
+
+appraise('default') {}
