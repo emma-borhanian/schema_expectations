@@ -21,4 +21,12 @@ describe SchemaExpectations do
 
     ENV['BUNDLE_GEMFILE'] = env_bundle_gemfile
   end
+
+  specify 'binding.pry is not committed' do
+    bindings = `git grep binding.pry`.split("\n")
+    bindings.reject! do |binding|
+      binding.start_with? 'spec/meta_spec.rb:'
+    end
+    expect(bindings).to be_empty
+  end
 end
