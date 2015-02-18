@@ -40,5 +40,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'guard-rspec', '~> 4.5'
   gem.add_development_dependency 'sqlite3', '~> 1.3'
   gem.add_development_dependency 'pg', '~> 0.18'
+  gem.add_development_dependency 'mysql2', '~> 0.3.18'
   gem.add_development_dependency 'database_cleaner', '~> 1.4'
 end

@@ -12,6 +12,7 @@
 - `validate_schema_nullable` is aware of columns with default values
 - `validate_schema_nullable` is aware of columns with default functions
 - postgres support
+- mysql support
 
 ### 0.0.1 (February 12, 2015)
 
