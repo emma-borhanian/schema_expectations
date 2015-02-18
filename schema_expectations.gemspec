@@ -23,6 +23,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 2.0.0'
 
   gem.add_dependency 'activerecord', '>= 3.1', '< 4.3'
+  gem.add_dependency 'activesupport', '>= 3.1', '< 4.3'
 
   # optional dependency
   gem.add_development_dependency 'rspec', '>= 3.0', '< 3.3'

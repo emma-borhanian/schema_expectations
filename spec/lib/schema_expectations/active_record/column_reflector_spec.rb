@@ -6,6 +6,43 @@ module SchemaExpectations
     describe ColumnReflector, :active_record do
       subject(:column_reflector) { ColumnReflector.new(Record) }
 
+      context '#without_present_default' do
+        specify 'filters default values' do
+          create_table :records do |t|
+            t.integer :integer_default, default: 0
+            t.string :string_default, default: 'test'
+            t.string :empty_default, default: ''
+            t.string :null_default, default: nil
+            t.string :no_default
+
+            t.timestamps null: false
+          end
+          stub_const('Record', Class.new(::ActiveRecord::Base))
+
+          expect(column_reflector.column_names).
+            to eq %i(id integer_default string_default empty_default null_default no_default created_at updated_at)
+
+          expect(column_reflector.without_present_default.column_names).
+            to eq %i(empty_default null_default no_default)
+        end
+
+        # TODO: support `default_function` (postgres)
+        pending 'filters default functions', :postgres do
+          create_table :records do |t|
+            t.integer :function_default, default: 'RAND()'
+            t.uuid :uuid_default
+            t.stirng :no_default
+          end
+          stub_const('Record', Class.new(::ActiveRecord::Base))
+
+          expect(column_reflector.column_names).
+            to eq %i(id function_default uuid_default no_default)
+
+          expect(column_reflector.without_present_default.column_names).
+            to eq %i(no_default)
+        end
+      end
+
       specify '#not_null' do
         create_table :records do |t|
           t.string :not_null, null: false
