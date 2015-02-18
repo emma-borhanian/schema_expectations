@@ -1,5 +1,6 @@
 require 'rspec/expectations'
 require 'schema_expectations/active_record/validation_reflector'
+require 'schema_expectations/active_record/column_reflector'
 
 module SchemaExpectations
   module RSpecMatchers
@@ -43,6 +44,7 @@ module SchemaExpectations
       def matches?(model)
         @model = cast_model model
         @validation_reflector = ActiveRecord::ValidationReflector.new(@model)
+        @column_reflector = ActiveRecord::ColumnReflector.new(@model)
         @not_null_column_names = filter_column_names(not_null_column_names).sort
         @present_column_names = filter_column_names(present_column_names).sort
         @not_null_column_names == @present_column_names
@@ -104,46 +106,24 @@ module SchemaExpectations
         model
       end
 
-      def columns
-        @model.columns
-      end
-
-      def column_names
-        columns.map { |column| column.name.to_sym }
-      end
-
       def present_attributes
         @validation_reflector.presence.unconditional.attributes
       end
 
       def present_column_names
-        attribute_column_names = present_attributes.
-          flat_map(&method(:attribute_to_column_names))
-
-        attribute_column_names & column_names
-      end
-
-      def attribute_to_column_names(attribute)
-        reflection = @model.reflect_on_association(attribute)
-
-        if reflection && reflection.belongs_to? && reflection.options.key?(:polymorphic)
-          [reflection.foreign_key, reflection.foreign_type]
-        elsif reflection && reflection.belongs_to?
-          [reflection.foreign_key]
-        else
-          [attribute]
-        end
+        @column_reflector.for_attributes(*present_attributes).
+          column_names
       end
 
       def column_name_to_attribute(column_name)
         @validation_reflector.attributes.detect do |attribute|
-          attribute_to_column_names(attribute).include? column_name
+          @column_reflector.for_attributes(attribute).column_names.
+            include? column_name
         end
       end
 
       def not_null_column_names
-        columns.select { |column| !column.null }.
-          map { |column| column.name.to_sym }
+        @column_reflector.not_null.column_names
       end
 
       def filter_column_names(column_names)
