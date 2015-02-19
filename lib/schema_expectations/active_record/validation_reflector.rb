@@ -14,6 +14,16 @@ module SchemaExpectations
         @validators.flat_map(&:attributes).uniq
       end
 
+      def unique_scopes
+        validators = validators_with_kind :uniqueness
+        scopes = validators.flat_map do |validator|
+          validator.attributes.map do |attribute|
+            [attribute] + Array(validator.options[:scope])
+          end
+        end
+        scopes.map(&:sort).sort.uniq
+      end
+
       def conditions_for_attribute(attribute)
         validators = validators_for_attribute(attribute)
         validators -= validators_without_options CONDITIONAL_OPTIONS

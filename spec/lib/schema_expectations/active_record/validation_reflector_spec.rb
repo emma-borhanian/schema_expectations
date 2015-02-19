@@ -37,6 +37,22 @@ module SchemaExpectations
         expect(validation_reflector.presence.unconditional.attributes).to eq %i(present)
       end
 
+      specify '#unique_scopes' do
+        Record.instance_eval do
+          validates :a, uniqueness: true
+          validates :b, uniqueness: { scope: %i(a) }
+          validates :c, uniqueness: { scope: %i(a b) }
+          validates :d, uniqueness: { scope: %i(b) }
+        end
+
+        expect(validation_reflector.unique_scopes).to eq [
+          %i(a),
+          %i(a b),
+          %i(a b c),
+          %i(b d)
+        ]
+      end
+
       specify '#conditions_for_attribute' do
         Record.instance_eval do
           validates :present, presence: true
