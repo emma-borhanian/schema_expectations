@@ -1,4 +1,4 @@
-if !ENV['APPRAISAL_INITIALIZED'] || ENV['BUNDLE_GEMFILE'] =~ /default.gemfile\z/
+if !ENV['BUNDLE_GEMFILE'] || ENV['BUNDLE_GEMFILE'] =~ /default.gemfile\z/
   if ENV['CI']
     require 'codeclimate-test-reporter'
     CodeClimate::TestReporter.start
