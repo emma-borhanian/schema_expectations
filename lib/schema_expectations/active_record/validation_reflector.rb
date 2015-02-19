@@ -5,6 +5,7 @@ module SchemaExpectations
     class ValidationReflector # :nodoc:
       CONDITIONAL_OPTIONS = %i(on if unless)
       ALLOW_NIL_OPTIONS = %i(allow_nil allow_blank)
+      ALLOW_EMPTY_OPTIONS = %i(allow_blank)
 
       def initialize(model, validators = nil)
         @model = model
@@ -33,6 +34,10 @@ module SchemaExpectations
         options_for_attribute attribute, ALLOW_NIL_OPTIONS
       end
 
+      def allow_empty_conditions_for_attribute(attribute)
+        options_for_attribute attribute, ALLOW_EMPTY_OPTIONS
+      end
+
       def presence
         new_with_validators validators_with_kind :presence
       end
@@ -43,6 +48,10 @@ module SchemaExpectations
 
       def disallow_nil
         new_with_validators validators_without_options ALLOW_NIL_OPTIONS
+      end
+
+      def disallow_empty
+        new_with_validators validators_without_options ALLOW_EMPTY_OPTIONS
       end
 
       private

@@ -31,6 +31,8 @@ module SchemaExpectations
 
         expect(validation_reflector.disallow_nil.attributes).to eq %i(present not_present conditional_1 conditional_2 conditional_3)
 
+        expect(validation_reflector.disallow_empty.attributes).to eq %i(present not_present conditional_1 conditional_2 conditional_3 conditional_4)
+
         expect(validation_reflector.presence.attributes).to eq %i(
           present conditional_1 conditional_2
           conditional_3 conditional_4 conditional_5)
@@ -88,6 +90,17 @@ module SchemaExpectations
           expect(validation_reflector.allow_nil_conditions_for_attribute(:conditional_3)).to be_nil
           expect(validation_reflector.allow_nil_conditions_for_attribute(:conditional_4)).to eq(allow_nil: true)
           expect(validation_reflector.allow_nil_conditions_for_attribute(:conditional_5)).to eq(allow_blank: true)
+        end
+
+        specify '#allow_empty_conditions_for_column_name' do
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:missing)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:present)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:not_present)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:conditional_1)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:conditional_2)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:conditional_3)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:conditional_4)).to be_nil
+          expect(validation_reflector.allow_empty_conditions_for_attribute(:conditional_5)).to eq(allow_blank: true)
         end
       end
     end
