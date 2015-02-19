@@ -2,6 +2,8 @@
 
 ### git master
 
+### 0.2.0 (Febuary 18, 2015)
+
 - support activerecord 3.1 to 4.2
 - support rspec 3.0 to 3.2
 - `validate_schema_nullable` #failure_message_when_negated works
