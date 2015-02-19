@@ -24,6 +24,10 @@ module SchemaExpectations
         new_with_columns @columns.reject(&method(:present_default_column?))
       end
 
+      def unique_scopes
+        unique_indexes.map { |index| index.columns.map(&:to_sym).sort }.sort
+      end
+
       private
 
       def new_with_columns(columns)
@@ -86,6 +90,11 @@ module SchemaExpectations
 
       def all_timestamp_attributes
         @all_timestamp_attributes ||= Record.new.send(:all_timestamp_attributes).map(&:to_sym)
+      end
+
+      def unique_indexes
+        indexes = @model.connection.indexes(@model.table_name)
+        indexes.select(&:unique)
       end
     end
   end

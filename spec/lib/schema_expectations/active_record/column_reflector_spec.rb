@@ -145,6 +145,33 @@ module SchemaExpectations
           expect(column_reflector.for_attributes(*%i(record missing other)).column_names).to eq %i(record_id other)
         end
       end
+
+      specify '#unique_scopes' do
+        create_table :records do |t|
+          t.string :a
+          t.string :b
+          t.string :c
+          t.string :d
+          t.string :not_unique
+          t.string :other
+        end
+
+        add_index :records, :not_unique
+        add_index :records, :a, unique: true
+        add_index :records, %i(a b), unique: true
+        add_index :records, %i(c a b), unique: true
+        add_index :records, %i(d b), unique: true
+        add_index :records, %i(a not_unique)
+
+        stub_const('Record', Class.new(::ActiveRecord::Base))
+
+        expect(column_reflector.unique_scopes).to eq [
+          %i(a),
+          %i(a b),
+          %i(a b c),
+          %i(b d)
+        ]
+      end
     end
   end
 end
