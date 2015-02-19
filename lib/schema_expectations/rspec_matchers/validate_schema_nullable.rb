@@ -57,7 +57,9 @@ module SchemaExpectations
         end
 
         (@not_null_column_names - @present_column_names).each do |column_name|
-          if conditions = validator_conditions_for_column_name(column_name)
+          conditions = validator_allow_nil_conditions_for_column_name(column_name) ||
+            validator_conditions_for_column_name(column_name)
+          if conditions
             errors << "#{column_name} is NOT NULL but its presence validator was conditional: #{conditions.inspect}"
           else
             errors << "#{column_name} is NOT NULL but has no presence validation"
@@ -106,7 +108,8 @@ module SchemaExpectations
       end
 
       def present_attributes
-        @validation_reflector.presence.unconditional.attributes
+        @validation_reflector.presence.
+          unconditional.disallow_nil.attributes
       end
 
       def present_column_names
@@ -130,6 +133,10 @@ module SchemaExpectations
         column_names &= @only if @only
         column_names -= @except if @except
         column_names
+      end
+
+      def validator_allow_nil_conditions_for_column_name(column_name)
+        @validation_reflector.allow_nil_conditions_for_attribute column_name_to_attribute column_name
       end
 
       def validator_conditions_for_column_name(column_name)

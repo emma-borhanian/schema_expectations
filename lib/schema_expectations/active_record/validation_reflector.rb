@@ -3,7 +3,8 @@ require 'schema_expectations/util'
 module SchemaExpectations
   module ActiveRecord
     class ValidationReflector # :nodoc:
-      CONDITIONAL_OPTIONS = %i(on if unless allow_nil allow_blank)
+      CONDITIONAL_OPTIONS = %i(on if unless)
+      ALLOW_NIL_OPTIONS = %i(allow_nil allow_blank)
 
       def initialize(model, validators = nil)
         @model = model
@@ -25,9 +26,11 @@ module SchemaExpectations
       end
 
       def conditions_for_attribute(attribute)
-        validators = validators_for_attribute(attribute)
-        validators -= validators_without_options CONDITIONAL_OPTIONS
-        Util.slice_hash(validators.first.options, *CONDITIONAL_OPTIONS) if validators.first
+        options_for_attribute attribute, CONDITIONAL_OPTIONS
+      end
+
+      def allow_nil_conditions_for_attribute(attribute)
+        options_for_attribute attribute, ALLOW_NIL_OPTIONS
       end
 
       def presence
@@ -38,10 +41,20 @@ module SchemaExpectations
         new_with_validators validators_without_options CONDITIONAL_OPTIONS
       end
 
+      def disallow_nil
+        new_with_validators validators_without_options ALLOW_NIL_OPTIONS
+      end
+
       private
 
       def new_with_validators(validators)
         ValidationReflector.new(@model, validators)
+      end
+
+      def options_for_attribute(attribute, option_keys)
+        validators = validators_for_attribute(attribute)
+        validators -= validators_without_options option_keys
+        Util.slice_hash(validators.first.options, *option_keys) if validators.first
       end
 
       def validators_with_kind(kind)
