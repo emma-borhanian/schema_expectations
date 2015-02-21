@@ -1,6 +1,9 @@
 # Schema Expectations Changelog
 
 ### git master
+
+### 0.3.0 (Febuary 20, 2015)
+
 - added `validate_schema_uniqueness`
 
 ### 0.2.0 (Febuary 18, 2015)
