@@ -1,0 +1,1 @@
+- `validates :attribute, if: :attribute_changed?` should have an exception as not conditional
