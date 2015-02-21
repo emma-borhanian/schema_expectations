@@ -3,7 +3,7 @@ require 'active_support/core_ext/hash/keys'
 module ActiveRecordHelpers
   extend Forwardable
 
-  CONNECTION_DELEGATES = %i(create_table execute)
+  CONNECTION_DELEGATES = %i(create_table add_index execute)
 
   def connection
     ActiveRecord::Base.connection
