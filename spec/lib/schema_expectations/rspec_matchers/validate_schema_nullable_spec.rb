@@ -37,7 +37,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to eq "#{column} is NOT NULL but has no presence validation"
+            expect(message).to eq "Record #{column} is NOT NULL but has no presence validation"
           end
         end
       end
@@ -86,11 +86,11 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
           errors = error.message.split(', ')
 
           nullable_columns.sort.zip(errors.take(nullable_columns.size)) do |column, message|
-            expect(message).to eq "#{column} has unconditional presence validation but is missing NOT NULL"
+            expect(message).to eq "Record #{column} has unconditional presence validation but is missing NOT NULL"
           end
 
           not_null_columns.sort.zip(errors.drop(nullable_columns.size)) do |column, message|
-            expect(message).to eq "#{column} is NOT NULL but has no presence validation"
+            expect(message).to eq "Record #{column} is NOT NULL but has no presence validation"
           end
         end
       end
@@ -122,7 +122,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           nullable_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to eq "#{column} has unconditional presence validation but is missing NOT NULL"
+            expect(message).to eq "Record #{column} has unconditional presence validation but is missing NOT NULL"
           end
         end
       end
@@ -145,7 +145,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
 
       expect do
         is_expected.to_not validate_schema_nullable
-      end.to raise_error 'should not match NOT NULL with its presence validation but does'
+      end.to raise_error 'Record should not match NOT NULL with its presence validation but does'
     end
 
     specify 'when primary_key is not id' do
@@ -180,7 +180,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to eq "#{column} is NOT NULL but its presence validator was conditional: {:on=>:create}"
+            expect(message).to eq "Record #{column} is NOT NULL but its presence validator was conditional: {:on=>:create}"
           end
         end
       end
@@ -193,7 +193,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to match /\A#{column} is NOT NULL but its presence validator was conditional: {:if=>\#<Proc:.*>}\z/
+            expect(message).to match /\ARecord #{column} is NOT NULL but its presence validator was conditional: {:if=>\#<Proc:.*>}\z/
           end
         end
       end
@@ -206,7 +206,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to match /\A#{column} is NOT NULL but its presence validator was conditional: {:unless=>\#<Proc:.*>}\z/
+            expect(message).to match /\ARecord #{column} is NOT NULL but its presence validator was conditional: {:unless=>\#<Proc:.*>}\z/
           end
         end
       end
@@ -219,7 +219,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to eq "#{column} is NOT NULL but its presence validator was conditional: {:allow_nil=>true}"
+            expect(message).to eq "Record #{column} is NOT NULL but its presence validator was conditional: {:allow_nil=>true}"
           end
         end
       end
@@ -232,7 +232,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaNullableMatcher, :acti
         end.to raise_error do |error|
           expect(error).to be_a RSpec::Expectations::ExpectationNotMetError
           not_null_columns.sort.zip(error.message.split(', ')) do |column, message|
-            expect(message).to eq "#{column} is NOT NULL but its presence validator was conditional: {:allow_blank=>true}"
+            expect(message).to eq "Record #{column} is NOT NULL but its presence validator was conditional: {:allow_blank=>true}"
           end
         end
       end

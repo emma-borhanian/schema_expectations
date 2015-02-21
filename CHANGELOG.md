@@ -3,6 +3,7 @@
 ### git master
 
 - include matchers in non-model specs as well
+- include model names in failure messages
 
 ### 0.3.0 (Febuary 20, 2015)
 

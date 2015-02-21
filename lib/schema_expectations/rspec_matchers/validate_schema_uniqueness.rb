@@ -57,16 +57,16 @@ module SchemaExpectations
         errors = []
 
         (@validator_unique_scopes - @schema_unique_scopes).each do |scope|
-          errors << "scope #{scope.inspect} has unconditional uniqueness validation but is missing a unique database index"
+          errors << "#{@model.name} scope #{scope.inspect} has unconditional uniqueness validation but is missing a unique database index"
         end
 
         (@schema_unique_scopes - @validator_unique_scopes).each do |scope|
           conditions = validator_conditions_for_scope(scope) ||
             validator_allow_empty_conditions_for_scope(scope)
           if conditions
-            errors << "scope #{scope.inspect} has a unique index but its uniqueness validator was conditional: #{conditions.inspect}"
+            errors << "#{@model.name} scope #{scope.inspect} has a unique index but its uniqueness validator was conditional: #{conditions.inspect}"
           else
-            errors << "scope #{scope.inspect} has a unique index but no uniqueness validation"
+            errors << "#{@model.name} scope #{scope.inspect} has a unique index but no uniqueness validation"
           end
         end
 
@@ -74,7 +74,7 @@ module SchemaExpectations
       end
 
       def failure_message_when_negated
-        'should not match unique indexes with its uniqueness validation but does'
+        "#{@model.name} should not match unique indexes with its uniqueness validation but does"
       end
 
       def description

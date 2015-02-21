@@ -53,16 +53,16 @@ module SchemaExpectations
         errors = []
 
         (@present_column_names - @not_null_column_names).each do |column_name|
-          errors << "#{column_name} has unconditional presence validation but is missing NOT NULL"
+          errors << "#{@model.name} #{column_name} has unconditional presence validation but is missing NOT NULL"
         end
 
         (@not_null_column_names - @present_column_names).each do |column_name|
           conditions = validator_allow_nil_conditions_for_column_name(column_name) ||
             validator_conditions_for_column_name(column_name)
           if conditions
-            errors << "#{column_name} is NOT NULL but its presence validator was conditional: #{conditions.inspect}"
+            errors << "#{@model.name} #{column_name} is NOT NULL but its presence validator was conditional: #{conditions.inspect}"
           else
-            errors << "#{column_name} is NOT NULL but has no presence validation"
+            errors << "#{@model.name} #{column_name} is NOT NULL but has no presence validation"
           end
         end
 
@@ -70,7 +70,7 @@ module SchemaExpectations
       end
 
       def failure_message_when_negated
-        'should not match NOT NULL with its presence validation but does'
+        "#{@model.name} should not match NOT NULL with its presence validation but does"
       end
 
       def description

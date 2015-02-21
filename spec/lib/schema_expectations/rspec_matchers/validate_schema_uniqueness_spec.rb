@@ -34,7 +34,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
       specify 'error messages' do
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            "scope #{unique_scope.inspect} has a unique index but no uniqueness validation")
+            "Record scope #{unique_scope.inspect} has a unique index but no uniqueness validation")
         )
       end
 
@@ -81,7 +81,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
       specify 'error messages' do
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            "scope [:index_not_unique] has unconditional uniqueness validation but is missing a unique database index")
+            "Record scope [:index_not_unique] has unconditional uniqueness validation but is missing a unique database index")
         )
       end
 
@@ -107,7 +107,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
       specify 'error messages' do
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            "scope [:no_index] has unconditional uniqueness validation but is missing a unique database index")
+            "Record scope [:no_index] has unconditional uniqueness validation but is missing a unique database index")
         )
       end
 
@@ -127,7 +127,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
 
       expect do
         is_expected.to_not validate_schema_uniqueness
-      end.to raise_error 'should not match unique indexes with its uniqueness validation but does'
+      end.to raise_error 'Record should not match unique indexes with its uniqueness validation but does'
     end
 
     specify 'allows validators with allow_nil: true' do
@@ -142,7 +142,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
 
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            "scope #{unique_scope.inspect} has a unique index but its uniqueness validator was conditional: {:on=>:create}")
+            "Record scope #{unique_scope.inspect} has a unique index but its uniqueness validator was conditional: {:on=>:create}")
         )
       end
 
@@ -151,7 +151,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
 
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            /\Ascope #{Regexp.escape(unique_scope.inspect)} has a unique index but its uniqueness validator was conditional: {:if=>\#<Proc:.*>}\z/)
+            /\ARecord scope #{Regexp.escape(unique_scope.inspect)} has a unique index but its uniqueness validator was conditional: {:if=>\#<Proc:.*>}\z/)
         )
       end
 
@@ -160,7 +160,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
 
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            /\Ascope #{Regexp.escape(unique_scope.inspect)} has a unique index but its uniqueness validator was conditional: {:unless=>\#<Proc:.*>}\z/)
+            /\ARecord scope #{Regexp.escape(unique_scope.inspect)} has a unique index but its uniqueness validator was conditional: {:unless=>\#<Proc:.*>}\z/)
         )
       end
 
@@ -169,7 +169,7 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
 
         expect { is_expected.to validate_schema_uniqueness }.to(
           raise_error(RSpec::Expectations::ExpectationNotMetError,
-            "scope #{unique_scope.inspect} has a unique index but its uniqueness validator was conditional: {:allow_blank=>true}")
+            "Record scope #{unique_scope.inspect} has a unique index but its uniqueness validator was conditional: {:allow_blank=>true}")
         )
       end
     end
