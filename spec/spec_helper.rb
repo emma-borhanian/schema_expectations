@@ -1,12 +1,12 @@
 if !ENV['BUNDLE_GEMFILE'] || ENV['BUNDLE_GEMFILE'] =~ /default.gemfile\z/
-  if !ENV['TRAVIS']
+  if ENV['CI']
+    require 'codeclimate-test-reporter'
+    CodeClimate::TestReporter.start
+  else
     require 'simplecov'
     SimpleCov.start do
       add_filter 'vendor'
     end
-  elsif ENV['TRAVIS_BRANCH'] == 'master' && ENV['TRAVIS_PULL_REQUEST'] == 'false'
-    require 'codeclimate-test-reporter'
-    CodeClimate::TestReporter.start
   end
 end
 
