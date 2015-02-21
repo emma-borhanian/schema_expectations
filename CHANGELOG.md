@@ -2,6 +2,8 @@
 
 ### git master
 
+- include matchers in non-model specs as well
+
 ### 0.3.0 (Febuary 20, 2015)
 
 - added `validate_schema_uniqueness`
