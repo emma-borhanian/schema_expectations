@@ -1,2 +1,0 @@
-- `validates :attribute, if: :attribute_changed?` should have an exception as not conditional
-- `:absence` validation should absolve a model of needing uniqueness validation on the relevant column
