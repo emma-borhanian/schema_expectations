@@ -4,6 +4,7 @@
 
 - include matchers in non-model specs as well
 - include model names in failure messages
+- fixed a bug in column reflector (test class name was used directly)
 
 ### 0.3.0 (Febuary 20, 2015)
 

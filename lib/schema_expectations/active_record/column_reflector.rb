@@ -89,7 +89,7 @@ module SchemaExpectations
       end
 
       def all_timestamp_attributes
-        @all_timestamp_attributes ||= Record.new.send(:all_timestamp_attributes).map(&:to_sym)
+        @all_timestamp_attributes ||= @model.new.send(:all_timestamp_attributes).map(&:to_sym)
       end
 
       def unique_indexes
