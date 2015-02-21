@@ -18,12 +18,7 @@ module SchemaExpectations
 
       def unique_scopes
         validators = validators_with_kind :uniqueness
-        scopes = validators.flat_map do |validator|
-          validator.attributes.map do |attribute|
-            [attribute] + Array(validator.options[:scope])
-          end
-        end
-        scopes.map(&:sort).sort.uniq
+        validators.flat_map(&method(:validator_scopes))
       end
 
       def conditions_for_attribute(attribute)
@@ -52,6 +47,15 @@ module SchemaExpectations
 
       def disallow_empty
         new_with_validators validators_without_options ALLOW_EMPTY_OPTIONS
+      end
+
+      def for_unique_scope(scope)
+        scope = scope.sort
+        validators = validators_with_kind :uniqueness
+        validators.select! do |validator|
+          validator_scopes(validator).include? scope
+        end
+        new_with_validators validators
       end
 
       private
@@ -85,6 +89,14 @@ module SchemaExpectations
         @validators.select do |validator|
           validator.attributes.include? attribute
         end
+      end
+
+      def validator_scopes(validator)
+        scopes = validator.attributes.map do |attribute|
+          scope = [attribute] + Array(validator.options[:scope])
+          scope.map(&:to_sym).sort
+        end
+        scopes.sort
       end
     end
   end

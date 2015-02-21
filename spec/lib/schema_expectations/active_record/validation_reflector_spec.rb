@@ -41,6 +41,22 @@ module SchemaExpectations
         expect(validation_reflector.presence.unconditional.disallow_nil.attributes).to eq %i(present)
       end
 
+      specify '#for_unique_scope' do
+        Record.instance_eval do
+          validates :a, uniqueness: true
+          validates :a, :d, uniqueness: { scope: %i(b) }
+          validates :c, uniqueness: { scope: %i(a b) }
+        end
+
+        expect(validation_reflector.for_unique_scope(%i(missing)).attributes).to be_empty
+        expect(validation_reflector.for_unique_scope(%i(a)).attributes).to eq %i(a)
+        expect(validation_reflector.for_unique_scope(%i(a b)).attributes).to eq %i(a d)
+        expect(validation_reflector.for_unique_scope(%i(b a)).attributes).to eq %i(a d)
+        expect(validation_reflector.for_unique_scope(%i(b d)).attributes).to eq %i(a d)
+        expect(validation_reflector.for_unique_scope(%i(a b c)).attributes).to eq %i(c)
+        expect(validation_reflector.for_unique_scope(%i(c b a)).attributes).to eq %i(c)
+      end
+
       specify '#unique_scopes' do
         Record.instance_eval do
           validates :a, uniqueness: true
