@@ -37,6 +37,10 @@ module SchemaExpectations
         new_with_validators validators_with_kind :presence
       end
 
+      def absence
+        new_with_validators validators_with_kind :absence
+      end
+
       def unconditional
         new_with_validators validators_without_options CONDITIONAL_OPTIONS
       end

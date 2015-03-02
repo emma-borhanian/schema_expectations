@@ -41,6 +41,16 @@ module SchemaExpectations
         expect(validation_reflector.presence.unconditional.disallow_nil.attributes).to eq %i(present)
       end
 
+      specify '#absence', active_record_version: '>= 4.0' do
+        Record.instance_eval do
+          validates :absent, absence: true
+          validates :not_absent, length: { minimum: 1 }
+        end
+
+        expect(validation_reflector.attributes).to eq %i(absent not_absent)
+        expect(validation_reflector.absence.attributes).to eq %i(absent)
+      end
+
       specify '#for_unique_scope' do
         Record.instance_eval do
           validates :a, uniqueness: true

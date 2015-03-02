@@ -64,6 +64,8 @@ note: if you exclude a column, then every unique scope which includes it will be
 regardless of whether that scope includes other non-excluded columns. Only works similarly, in
 that it will ignore any scope which contains columns not in the list
 
+Absence validation on any attribute in a scope absolves requiring uniqueness validation.
+
 ## Validating presence constraints
 
 The `validate_schema_nullable` matcher tests that an ActiveRecord model
