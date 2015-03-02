@@ -16,7 +16,7 @@ module SchemaExpectations
     #       t.integer :record_id
     #       t.index [:record_type, :record_id], unique: true
     #     end
-
+    #
     #     class Record < ActiveRecord::Base
     #       validates :record_type, uniqueness: { scope: :record_id }
     #     end
@@ -37,6 +37,8 @@ module SchemaExpectations
     # note: if you exclude a column, then every unique scope which includes it will be completely ignored,
     # regardless of whether that scope includes other non-excluded columns. Only works similarly, in
     # that it will ignore any scope which contains columns not in the list
+    #
+    # Absence validation on any attribute in a scope absolves requiring uniqueness validation.
     #
     # @return [ValidateSchemaUniquenessMatcher]
     def validate_schema_uniqueness
