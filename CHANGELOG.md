@@ -2,6 +2,8 @@
 
 ### git master
 
+- absence validation absolves requiring uniqueness validation
+
 ### 0.4.0 (Febuary 20, 2015)
 
 - include matchers in non-model specs as well
