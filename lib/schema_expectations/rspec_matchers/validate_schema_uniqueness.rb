@@ -1,6 +1,5 @@
 require 'rspec/expectations'
-require 'schema_expectations/active_record/validation_reflector'
-require 'schema_expectations/active_record/column_reflector'
+require 'schema_expectations/rspec_matchers/base'
 
 module SchemaExpectations
   module RSpecMatchers
@@ -45,13 +44,9 @@ module SchemaExpectations
       ValidateSchemaUniquenessMatcher.new
     end
 
-    class ValidateSchemaUniquenessMatcher
+    class ValidateSchemaUniquenessMatcher < Base
       def matches?(model)
-        @model = cast_model model
-        @validation_reflector = ActiveRecord::ValidationReflector.new(@model)
-        @column_reflector = ActiveRecord::ColumnReflector.new(@model)
-        @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
-        @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
+        setup(model)
         (@validator_unique_scopes - @schema_unique_scopes).empty? &&
           (@schema_unique_scopes - @validator_unique_scopes - absent_scopes).empty?
       end
@@ -84,38 +79,12 @@ module SchemaExpectations
         'validate unique indexes have uniqueness validation'
       end
 
-      # Specifies a list of columns to restrict matcher
-      #
-      # Any unique scope which includes a column not in this list will be ignored
-      #
-      # @return [ValidateSchemaUniquenessMatcher] self
-      def only(*args)
-        fail 'cannot use only and except' if @except
-        @only = Array(args)
-        fail 'empty only list' if @only.empty?
-        self
-      end
-
-      # Specifies a list of columns for matcher to ignore
-      #
-      # Any unique scope which includes one of these columns will be ignored
-      #
-      # @return [ValidateSchemaUniquenessMatcher] self
-      def except(*args)
-        fail 'cannot use only and except' if @only
-        @except = Array(args)
-        fail 'empty except list' if @except.empty?
-        self
-      end
-
       private
 
-      def cast_model(model)
-        model = model.class if model.is_a?(::ActiveRecord::Base)
-        unless model.is_a?(Class) && model.ancestors.include?(::ActiveRecord::Base)
-          fail "#{model.inspect} does not inherit from ActiveRecord::Base"
-        end
-        model
+      def setup(model)
+        super
+        @validator_unique_scopes = deep_sort(filter_scopes(validator_unique_scopes))
+        @schema_unique_scopes = deep_sort(filter_scopes(schema_unique_scopes))
       end
 
       def validator_unique_scopes
@@ -136,18 +105,26 @@ module SchemaExpectations
         end
       end
 
+      def deep_sort(scopes)
+        scopes.map(&:sort).sort
+      end
+
       def validator_conditions_for_scope(scope)
-        reflector = @validation_reflector.for_unique_scope(scope)
-        conditions = reflector.attributes.map do |attribute|
+        validator_conditions(scope) do |reflector, attribute|
           reflector.conditions_for_attribute attribute
         end
-        conditions.compact.first
       end
 
       def validator_allow_empty_conditions_for_scope(scope)
+        validator_conditions(scope) do |reflector, attribute|
+          reflector.allow_empty_conditions_for_attribute attribute
+        end
+      end
+
+      def validator_conditions(scope)
         reflector = @validation_reflector.for_unique_scope(scope)
         conditions = reflector.attributes.map do |attribute|
-          reflector.allow_empty_conditions_for_attribute attribute
+          yield reflector, attribute
         end
         conditions.compact.first
       end
