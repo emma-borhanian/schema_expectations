@@ -1,6 +1,5 @@
 require 'rspec/expectations'
-require 'schema_expectations/active_record/validation_reflector'
-require 'schema_expectations/active_record/column_reflector'
+require 'schema_expectations/rspec_matchers/base'
 
 module SchemaExpectations
   module RSpecMatchers
@@ -45,11 +44,9 @@ module SchemaExpectations
       ValidateSchemaUniquenessMatcher.new
     end
 
-    class ValidateSchemaUniquenessMatcher
+    class ValidateSchemaUniquenessMatcher < Base
       def matches?(model)
-        @model = cast_model model
-        @validation_reflector = ActiveRecord::ValidationReflector.new(@model)
-        @column_reflector = ActiveRecord::ColumnReflector.new(@model)
+        setup(model)
         @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
         @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
         (@validator_unique_scopes - @schema_unique_scopes).empty? &&
@@ -84,39 +81,7 @@ module SchemaExpectations
         'validate unique indexes have uniqueness validation'
       end
 
-      # Specifies a list of columns to restrict matcher
-      #
-      # Any unique scope which includes a column not in this list will be ignored
-      #
-      # @return [ValidateSchemaUniquenessMatcher] self
-      def only(*args)
-        fail 'cannot use only and except' if @except
-        @only = Array(args)
-        fail 'empty only list' if @only.empty?
-        self
-      end
-
-      # Specifies a list of columns for matcher to ignore
-      #
-      # Any unique scope which includes one of these columns will be ignored
-      #
-      # @return [ValidateSchemaUniquenessMatcher] self
-      def except(*args)
-        fail 'cannot use only and except' if @only
-        @except = Array(args)
-        fail 'empty except list' if @except.empty?
-        self
-      end
-
       private
-
-      def cast_model(model)
-        model = model.class if model.is_a?(::ActiveRecord::Base)
-        unless model.is_a?(Class) && model.ancestors.include?(::ActiveRecord::Base)
-          fail "#{model.inspect} does not inherit from ActiveRecord::Base"
-        end
-        model
-      end
 
       def validator_unique_scopes
         @validation_reflector.unconditional.disallow_empty.unique_scopes
