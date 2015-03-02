@@ -8,6 +8,10 @@
 
 Allows you to test whether your database schema matches the validations in your ActiveRecord models.
 
+# Documentation
+
+You can find documentation at http://www.rubydoc.info/gems/schema_expectations
+
 # Installation
 
 Add `schema_expectations` to your Gemfile:
