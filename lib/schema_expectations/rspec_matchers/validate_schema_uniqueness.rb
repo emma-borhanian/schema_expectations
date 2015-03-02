@@ -102,17 +102,21 @@ module SchemaExpectations
       end
 
       def validator_conditions_for_scope(scope)
-        reflector = @validation_reflector.for_unique_scope(scope)
-        conditions = reflector.attributes.map do |attribute|
+        validator_conditions(scope) do |reflector, attribute|
           reflector.conditions_for_attribute attribute
         end
-        conditions.compact.first
       end
 
       def validator_allow_empty_conditions_for_scope(scope)
+        validator_conditions(scope) do |reflector, attribute|
+          reflector.allow_empty_conditions_for_attribute attribute
+        end
+      end
+
+      def validator_conditions(scope)
         reflector = @validation_reflector.for_unique_scope(scope)
         conditions = reflector.attributes.map do |attribute|
-          reflector.allow_empty_conditions_for_attribute attribute
+          yield reflector, attribute
         end
         conditions.compact.first
       end
