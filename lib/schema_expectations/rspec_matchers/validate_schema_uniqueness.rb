@@ -83,8 +83,8 @@ module SchemaExpectations
 
       def setup(model)
         super
-        @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
-        @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
+        @validator_unique_scopes = deep_sort(filter_scopes(validator_unique_scopes))
+        @schema_unique_scopes = deep_sort(filter_scopes(schema_unique_scopes))
       end
 
       def validator_unique_scopes
@@ -103,6 +103,10 @@ module SchemaExpectations
         else
           scopes
         end
+      end
+
+      def deep_sort(scopes)
+        scopes.map(&:sort).sort
       end
 
       def validator_conditions_for_scope(scope)
