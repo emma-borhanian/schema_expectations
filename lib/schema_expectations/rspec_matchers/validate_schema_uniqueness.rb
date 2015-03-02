@@ -47,8 +47,6 @@ module SchemaExpectations
     class ValidateSchemaUniquenessMatcher < Base
       def matches?(model)
         setup(model)
-        @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
-        @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
         (@validator_unique_scopes - @schema_unique_scopes).empty? &&
           (@schema_unique_scopes - @validator_unique_scopes - absent_scopes).empty?
       end
@@ -82,6 +80,12 @@ module SchemaExpectations
       end
 
       private
+
+      def setup(model)
+        super
+        @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
+        @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
+      end
 
       def validator_unique_scopes
         @validation_reflector.unconditional.disallow_empty.unique_scopes

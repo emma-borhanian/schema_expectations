@@ -41,8 +41,6 @@ module SchemaExpectations
     class ValidateSchemaNullableMatcher < Base
       def matches?(model)
         setup(model)
-        @not_null_column_names = filter_column_names(not_null_column_names).sort
-        @present_column_names = filter_column_names(present_column_names).sort
         @not_null_column_names == @present_column_names
       end
 
@@ -75,6 +73,12 @@ module SchemaExpectations
       end
 
       private
+
+      def setup(model)
+        super
+        @not_null_column_names = filter_column_names(not_null_column_names).sort
+        @present_column_names = filter_column_names(present_column_names).sort
+      end
 
       def present_attributes
         @validation_reflector.presence.
