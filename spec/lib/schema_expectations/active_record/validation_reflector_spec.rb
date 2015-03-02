@@ -16,7 +16,6 @@ module SchemaExpectations
         Record.instance_eval do
           validates :present, presence: true
           validates :not_present, length: { minimum: 1 }
-          validates :absent, absence: true
           validates :conditional_1, presence: true, on: :create
           validates :conditional_2, presence: true, if: ->{ false }
           validates :conditional_3, presence: true, unless: ->{ false }
@@ -25,23 +24,31 @@ module SchemaExpectations
         end
 
         expect(validation_reflector.attributes).to eq %i(
-          present not_present absent conditional_1 conditional_2
+          present not_present conditional_1 conditional_2
           conditional_3 conditional_4 conditional_5)
 
-        expect(validation_reflector.unconditional.attributes).to eq %i(present not_present absent conditional_4 conditional_5)
+        expect(validation_reflector.unconditional.attributes).to eq %i(present not_present conditional_4 conditional_5)
 
-        expect(validation_reflector.disallow_nil.attributes).to eq %i(present not_present absent conditional_1 conditional_2 conditional_3)
+        expect(validation_reflector.disallow_nil.attributes).to eq %i(present not_present conditional_1 conditional_2 conditional_3)
 
-        expect(validation_reflector.disallow_empty.attributes).to eq %i(present not_present absent conditional_1 conditional_2 conditional_3 conditional_4)
+        expect(validation_reflector.disallow_empty.attributes).to eq %i(present not_present conditional_1 conditional_2 conditional_3 conditional_4)
 
         expect(validation_reflector.presence.attributes).to eq %i(
           present conditional_1 conditional_2
           conditional_3 conditional_4 conditional_5)
 
-        expect(validation_reflector.absence.attributes).to eq %i(absent)
-
         expect(validation_reflector.unconditional.presence.disallow_nil.attributes).to eq %i(present)
         expect(validation_reflector.presence.unconditional.disallow_nil.attributes).to eq %i(present)
+      end
+
+      specify '#absence', active_record_version: '>= 4.0' do
+        Record.instance_eval do
+          validates :absent, absence: true
+          validates :not_absent, length: { minimum: 1 }
+        end
+
+        expect(validation_reflector.attributes).to eq %i(absent not_absent)
+        expect(validation_reflector.absence.attributes).to eq %i(absent)
       end
 
       specify '#for_unique_scope' do

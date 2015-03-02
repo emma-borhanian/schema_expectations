@@ -50,7 +50,8 @@ module SchemaExpectations
         @column_reflector = ActiveRecord::ColumnReflector.new(@model)
         @validator_unique_scopes = filter_scopes(validator_unique_scopes).map(&:sort).sort
         @schema_unique_scopes = filter_scopes(schema_unique_scopes).map(&:sort).sort
-        @validator_unique_scopes == @schema_unique_scopes
+        (@validator_unique_scopes - @schema_unique_scopes).empty? &&
+          (@schema_unique_scopes - @validator_unique_scopes - absent_scopes).empty?
       end
 
       def failure_message
@@ -60,7 +61,7 @@ module SchemaExpectations
           errors << "#{@model.name} scope #{scope.inspect} has unconditional uniqueness validation but is missing a unique database index"
         end
 
-        (@schema_unique_scopes - @validator_unique_scopes).each do |scope|
+        (@schema_unique_scopes - @validator_unique_scopes - absent_scopes).each do |scope|
           conditions = validator_conditions_for_scope(scope) ||
             validator_allow_empty_conditions_for_scope(scope)
           if conditions
@@ -147,6 +148,17 @@ module SchemaExpectations
           reflector.allow_empty_conditions_for_attribute attribute
         end
         conditions.compact.first
+      end
+
+      def absent_scopes
+        scopes = @validator_unique_scopes + @schema_unique_scopes
+        absent_attributes = @validation_reflector.
+          absence.unconditional.disallow_empty.attributes
+        absent_columns = @column_reflector.for_attributes(*absent_attributes).column_names
+
+        scopes.reject do |scope|
+          (scope & absent_columns).empty?
+        end
       end
     end
   end

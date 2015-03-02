@@ -122,6 +122,30 @@ describe SchemaExpectations::RSpecMatchers::ValidateSchemaUniquenessMatcher, :ac
       end
     end
 
+    context 'with absence validation on a unique column', active_record_version: '>= 4.0' do
+      before do
+        validates unique_scope.first, absence: true
+      end
+
+      it { is_expected.to validate_schema_uniqueness }
+    end
+
+    context 'with conditional absence validation on a unique column', active_record_version: '>= 4.0' do
+      before do
+        validates unique_scope.first, absence: true, if: -> { false }
+      end
+
+      it { is_expected.to_not validate_schema_uniqueness }
+    end
+
+    context 'with allow_blank absence validation on a unique column', active_record_version: '>= 4.0' do
+      before do
+        validates unique_scope.first, absence: true, allow_blank: true
+      end
+
+      it { is_expected.to_not validate_schema_uniqueness }
+    end
+
     specify '#failure_message_when_negated' do
       validates unique_scope.first, uniqueness: { scope: unique_scope.drop(1) }
 
