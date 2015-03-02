@@ -2,6 +2,8 @@
 
 ### git master
 
+### 0.5.0 (March 2, 2015)
+
 - absence validation absolves requiring uniqueness validation
 
 ### 0.4.0 (Febuary 20, 2015)
