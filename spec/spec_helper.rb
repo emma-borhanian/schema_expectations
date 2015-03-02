@@ -1,12 +1,17 @@
-if !ENV['BUNDLE_GEMFILE'] || ENV['BUNDLE_GEMFILE'] =~ /default.gemfile\z/
-  if ENV['CI']
+DEFAULT_GEMFILES = [
+  File.expand_path('../../Gemfile', __FILE__),
+  File.expand_path('../../gemfiles/default.gemfile', __FILE__)
+]
+if ENV['CI']
+  if !ENV['BUNDLE_GEMFILE'] ||
+    DEFAULT_GEMFILES.include?(File.expand_path(ENV['BUNDLE_GEMFILE']))
     require 'codeclimate-test-reporter'
     CodeClimate::TestReporter.start
-  else
-    require 'simplecov'
-    SimpleCov.start do
-      add_filter 'vendor'
-    end
+  end
+else
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter 'vendor'
   end
 end
 
